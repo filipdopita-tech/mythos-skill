@@ -28,10 +28,10 @@ Max 5 iterations per task. Always uses `claude-opus-4-6`.
 
 ```bash
 # Via Claude Code
-claude install https://github.com/filipdopita/mythos-skill
+claude install https://github.com/filipdopita-tech/mythos-skill
 
 # Manual install
-git clone https://github.com/filipdopita/mythos-skill ~/.claude/skills/mythos
+git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/mythos
 ```
 
 ---
@@ -97,4 +97,4 @@ MIT — free to use, fork, and modify.
 
 ## Landing Page
 
-[mythos.filipdopita.com](https://mythos.filipdopita.com) *(or open `index.html` locally)*
+[filipdopita-tech.github.io/mythos-skill](https://filipdopita-tech.github.io/mythos-skill) *(or open `index.html` locally)*

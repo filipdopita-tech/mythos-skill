@@ -7,8 +7,8 @@ allowed-tools: Bash, Read, Write, Glob, Grep, WebSearch, WebFetch, Edit
 user-invocable: true
 author: filipdopita
 license: MIT
-homepage: https://github.com/filipdopita/mythos-skill
-repository: https://github.com/filipdopita/mythos-skill
+homepage: https://github.com/filipdopita-tech/mythos-skill
+repository: https://github.com/filipdopita-tech/mythos-skill
 metadata:
   openclaw:
     emoji: "⚡"
@@ -181,10 +181,10 @@ Works on any system with Claude Code installed:
 
 ```bash
 # Via Claude Code (recommended)
-claude install https://github.com/filipdopita/mythos-skill
+claude install https://github.com/filipdopita-tech/mythos-skill
 
 # Manual
-git clone https://github.com/filipdopita/mythos-skill ~/.claude/skills/mythos
+git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/mythos
 ```
 
 Then use `/mythos [task]` in any Claude Code session.

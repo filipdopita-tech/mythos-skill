@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 # Mythos Claude Code Skill — Installer
-# Usage: curl -fsSL https://raw.githubusercontent.com/filipdopita/mythos-skill/main/install.sh | bash
+# Usage: curl -fsSL https://raw.githubusercontent.com/filipdopita-tech/mythos-skill/main/install.sh | bash
 
 set -e
 
 SKILL_DIR="$HOME/.claude/skills/mythos"
-REPO="https://github.com/filipdopita/mythos-skill"
-RAW="https://raw.githubusercontent.com/filipdopita/mythos-skill/main"
+REPO="https://github.com/filipdopita-tech/mythos-skill"
+RAW="https://raw.githubusercontent.com/filipdopita-tech/mythos-skill/main"
 
 echo ""
 echo "⚡ Installing Mythos Claude Code Skill"
