@@ -1,0 +1,26 @@
+{
+  "name": "mythos",
+  "version": "1.0.0",
+  "description": "Emulation of Claude Mythos Preview — autonomous iterative agent: MAP → HYPOTHESIZE → EXECUTE → EVALUATE → SELF-CORRECT → OUTPUT. Evidence-first. Always Opus.",
+  "author": {
+    "name": "Filip Dopita",
+    "url": "https://github.com/filipdopita"
+  },
+  "homepage": "https://github.com/filipdopita/mythos-skill",
+  "repository": "https://github.com/filipdopita/mythos-skill",
+  "license": "MIT",
+  "keywords": [
+    "security",
+    "debugging",
+    "autonomous",
+    "opus",
+    "deep-analysis",
+    "evidence-first",
+    "chain-reasoning",
+    "vulnerability-hunt",
+    "self-correction",
+    "iterative"
+  ],
+  "skills": ["./"],
+  "hooks": {}
+}

@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mythos — Claude Code Skill</title>
+  <meta name="description" content="Emulation of Claude Mythos Preview. One autonomous agent. Iterative loop. Evidence-first. Always Opus." />
+  <meta property="og:title" content="Mythos — Claude Code Skill" />
+  <meta property="og:description" content="Hypothesize. Execute. Evaluate. Self-correct. Repeat." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080808;
+      --surface:   #111111;
+      --surface2:  #181818;
+      --border:    rgba(255,255,255,0.07);
+      --border2:   rgba(255,255,255,0.12);
+      --text:      #f0f0f0;
+      --muted:     #6b6b6b;
+      --subtle:    #3a3a3a;
+      --accent:    #cc785c;
+      --accent2:   #a85d44;
+      --accent-glow: rgba(204, 120, 92, 0.15);
+      --green:     #4caf7d;
+      --mono:      'JetBrains Mono', monospace;
+      --sans:      'Inter', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── Noise overlay ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    /* ─── Ambient glow ─── */
+    .glow-orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-orb-1 {
+      width: 600px; height: 600px;
+      top: -200px; left: -100px;
+      background: radial-gradient(circle, rgba(204,120,92,0.06) 0%, transparent 70%);
+    }
+    .glow-orb-2 {
+      width: 500px; height: 500px;
+      bottom: 0; right: -100px;
+      background: radial-gradient(circle, rgba(120,92,204,0.05) 0%, transparent 70%);
+    }
+
+    /* ─── Layout ─── */
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ─── Nav ─── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    nav .wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.01em;
+    }
+    .nav-logo .bolt {
+      color: var(--accent);
+      font-size: 16px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.15s;
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text) !important;
+      font-size: 13px !important;
+      font-family: var(--mono);
+      transition: border-color 0.15s, background 0.15s !important;
+    }
+    .nav-cta:hover {
+      background: var(--surface) !important;
+      border-color: var(--subtle) !important;
+      color: var(--text) !important;
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      padding: 160px 0 100px;
+      text-align: center;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border: 1px solid rgba(204,120,92,0.3);
+      border-radius: 20px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      background: rgba(204,120,92,0.05);
+    }
+    .hero-badge::before {
+      content: '';
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    h1 {
+      font-size: clamp(44px, 7vw, 80px);
+      font-weight: 300;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 24px;
+      color: var(--text);
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(135deg, #f0f0f0 0%, #cc785c 60%, #a85d44 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--muted);
+      max-width: 500px;
+      margin: 0 auto 48px;
+      font-weight: 300;
+      line-height: 1.7;
+    }
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: var(--accent);
+      color: #fff;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-primary:hover {
+      background: var(--accent2);
+      transform: translateY(-1px);
+    }
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      font-size: 14px;
+      text-decoration: none;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    .btn-secondary:hover {
+      color: var(--text);
+      border-color: var(--subtle);
+    }
+
+    /* ─── Install block ─── */
+    .install-block {
+      margin: 64px auto 0;
+      max-width: 560px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .install-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .install-dots {
+      display: flex;
+      gap: 6px;
+    }
+    .install-dots span {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--subtle);
+    }
+    .install-dots span:nth-child(1) { background: #ff5f57; }
+    .install-dots span:nth-child(2) { background: #ffbd2e; }
+    .install-dots span:nth-child(3) { background: #28c840; }
+    .install-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--muted);
+    }
+    .copy-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--mono);
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: color 0.15s, background 0.15s;
+    }
+    .copy-btn:hover {
+      color: var(--text);
+      background: var(--subtle);
+    }
+    .install-body {
+      padding: 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 2;
+    }
+    .install-body .comment { color: var(--muted); }
+    .install-body .cmd { color: var(--text); }
+    .install-body .cmd .dollar { color: var(--accent); }
+
+    /* ─── Stats ─── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 100px 0;
+    }
+    .stat {
+      background: var(--surface);
+      padding: 28px 24px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 32px;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      font-family: var(--mono);
+    }
+    .stat-value span { color: var(--accent); }
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* ─── Section headings ─── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+    h2 {
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      line-height: 1.2;
+      color: var(--text);
+      margin-bottom: 16px;
+    }
+    .section-sub {
+      font-size: 16px;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.7;
+      margin-bottom: 48px;
+      font-weight: 300;
+    }
+
+    /* ─── Loop diagram ─── */
+    .loop-section { margin: 0 0 100px; }
+    .loop-diagram {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 40px;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.8;
+      position: relative;
+      overflow: hidden;
+    }
+    .loop-diagram::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    }
+    .loop-step {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      transition: background 0.15s;
+    }
+    .loop-step:last-child { border-bottom: none; }
+    .loop-step:hover { background: rgba(255,255,255,0.02); }
+    .step-num {
+      font-size: 11px;
+      color: var(--accent);
+      font-weight: 500;
+      min-width: 20px;
+      padding-top: 2px;
+    }
+    .step-name {
+      color: var(--text);
+      font-weight: 500;
+      min-width: 140px;
+    }
+    .step-desc {
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .step-branch {
+      color: var(--subtle);
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .step-branch .yes { color: var(--green); }
+    .step-branch .no  { color: #e57373; }
+
+    /* ─── Use cases ─── */
+    .usecases { margin: 0 0 100px; }
+    .cases-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .case-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 28px;
+      transition: border-color 0.2s;
+    }
+    .case-card:hover { border-color: var(--subtle); }
+    .case-icon {
+      font-size: 24px;
+      margin-bottom: 14px;
+    }
+    .case-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+    .case-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .case-cmd {
+      margin-top: 16px;
+      padding: 8px 12px;
+      background: var(--bg);
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+    }
+
+    /* ─── Principle rules ─── */
+    .rules { margin: 0 0 100px; }
+    .rules-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .rule-item {
+      background: var(--surface);
+      display: flex;
+      gap: 20px;
+      padding: 20px 24px;
+      align-items: flex-start;
+    }
+    .rule-num {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--accent);
+      min-width: 24px;
+      padding-top: 3px;
+    }
+    .rule-body { flex: 1; }
+    .rule-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .rule-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    /* ─── Comparison ─── */
+    .comparison { margin: 0 0 100px; }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    .compare-table th {
+      padding: 12px 20px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--surface2);
+    }
+    .compare-table th:first-child { border-radius: 10px 0 0 0; }
+    .compare-table th:last-child  { border-radius: 0 10px 0 0; }
+    .compare-table td {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      vertical-align: top;
+      background: var(--surface);
+    }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:last-child td:first-child { border-radius: 0 0 0 10px; }
+    .compare-table tr:last-child td:last-child  { border-radius: 0 0 10px 0; }
+    .compare-table td:first-child { color: var(--text); font-weight: 500; }
+    .tag-yes {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(76,175,125,0.1);
+      color: var(--green);
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+    .tag-no {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(229,115,115,0.1);
+      color: #e57373;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+    .tag-partial {
+      display: inline-block;
+      padding: 2px 8px;
+      background: rgba(255,189,46,0.1);
+      color: #ffbd2e;
+      border-radius: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    /* ─── Quick start ─── */
+    .quickstart { margin: 0 0 100px; }
+    .qs-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .qs-step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .qs-num {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .qs-body {}
+    .qs-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .qs-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    code {
+      font-family: var(--mono);
+      font-size: 12px;
+      padding: 2px 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+    }
+    pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--text);
+      overflow-x: auto;
+      margin-top: 10px;
+    }
+    pre .dollar { color: var(--accent); }
+    pre .comment { color: var(--muted); }
+
+    /* ─── Footer ─── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 40px 0;
+      margin-top: 40px;
+    }
+    footer .wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .footer-bolt { color: var(--accent); }
+    .footer-links {
+      display: flex;
+      gap: 20px;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .footer-links a:hover { color: var(--text); }
+
+    /* ─── Warning box ─── */
+    .warning-box {
+      margin: 48px 0 0;
+      padding: 16px 20px;
+      background: rgba(255,189,46,0.04);
+      border: 1px solid rgba(255,189,46,0.15);
+      border-radius: 8px;
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .warning-icon { color: #ffbd2e; flex-shrink: 0; }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 640px) {
+      .stats-row { grid-template-columns: 1fr 1fr; }
+      .cases-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .loop-step { flex-direction: column; gap: 4px; }
+      .step-name { min-width: unset; }
+    }
+  </style>
+</head>
+<body>
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+
+  <!-- Nav -->
+  <nav>
+    <div class="wrapper">
+      <a href="#" class="nav-logo">
+        <span class="bolt">⚡</span>
+        mythos
+      </a>
+      <div class="nav-links">
+        <a href="#loop">Loop</a>
+        <a href="#cases">Use Cases</a>
+        <a href="#principles">Principles</a>
+        <a href="#quickstart">Install</a>
+        <a href="https://github.com/filipdopita/mythos-skill" class="nav-cta" target="_blank">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrapper">
+      <div class="hero-badge">Claude Code Skill · Frontier Emulation</div>
+      <h1>Think like<br/><em>Mythos</em></h1>
+      <p class="hero-sub">
+        Emulation of Claude Mythos Preview. One autonomous agent in a closed iterative loop — hypothesize, execute, evaluate, self-correct. No asking. Just proof.
+      </p>
+      <div class="hero-actions">
+        <a href="#quickstart" class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          Install
+        </a>
+        <a href="https://github.com/filipdopita/mythos-skill" class="btn-secondary" target="_blank">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+      </div>
+
+      <!-- Install block -->
+      <div class="install-block">
+        <div class="install-header">
+          <div class="install-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="install-label">terminal</span>
+          <button class="copy-btn" onclick="copyInstall(this)">copy</button>
+        </div>
+        <div class="install-body">
+          <div class="comment"># Install via Claude Code</div>
+          <div class="cmd"><span class="dollar">$</span> claude install https://github.com/filipdopita/mythos-skill</div>
+          <div class="comment" style="margin-top:12px"># Then use it</div>
+          <div class="cmd"><span class="dollar">$</span> /mythos security ./api</div>
+          <div class="cmd"><span class="dollar">$</span> /mythos debug "null pointer on checkout"</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <div class="wrapper">
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-value"><span>83.1</span>%</div>
+        <div class="stat-label">PoC exploit<br/>on first attempt</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value"><span>181</span>/181</div>
+        <div class="stat-label">Firefox CVEs<br/>found</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value"><span>27</span>yr</div>
+        <div class="stat-label">Oldest vuln<br/>discovered</div>
+      </div>
+      <div class="stat">
+        <div class="stat-value"><span>5</span></div>
+        <div class="stat-label">Max iterations<br/>per task</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loop -->
+  <section class="loop-section" id="loop">
+    <div class="wrapper">
+      <p class="section-label">Core Loop</p>
+      <h2>Six steps.<br/>No detours.</h2>
+      <p class="section-sub">Every task runs the same loop. No shortcuts. Every hypothesis is tested. Every output is verified against evidence before it leaves the loop.</p>
+
+      <div class="loop-diagram">
+        <div class="loop-step">
+          <div class="step-num">01</div>
+          <div>
+            <div class="step-name">MAP</div>
+            <div class="step-desc">Full recon of the problem space — files, code, logs, system state, all context. Build a complete picture before forming any hypothesis.</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">02</div>
+          <div>
+            <div class="step-name">HYPOTHESIZE</div>
+            <div class="step-desc">Form one concrete, falsifiable hypothesis. Not "maybe SQL injection" — "SQLi in users.py:47 via the id parameter, unescaped before query."</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">03</div>
+          <div>
+            <div class="step-name">EXECUTE</div>
+            <div class="step-desc">Test the hypothesis with a real action. Run the code. Read the file. Execute the bash command. If it can be verified, it must be verified.</div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">04</div>
+          <div>
+            <div class="step-name">EVALUATE</div>
+            <div class="step-desc">Did execution confirm the hypothesis?</div>
+            <div class="step-branch">
+              <span class="yes">YES →</span> Chain: what does this finding imply? Verify the implication.<br/>
+              <span class="no">NO  →</span> Revise hypothesis. Back to step 02. No wasted output.
+            </div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">05</div>
+          <div>
+            <div class="step-name">SELF-CORRECT</div>
+            <div class="step-desc">Before returning any output: is every claim backed by actual evidence? Are chain findings connected without gaps?</div>
+            <div class="step-branch">
+              <span class="yes">YES →</span> Proceed to output.<br/>
+              <span class="no">NO  →</span> Back to step 02. No unverified claims leave the loop.
+            </div>
+          </div>
+        </div>
+        <div class="loop-step">
+          <div class="step-num">06</div>
+          <div>
+            <div class="step-name">OUTPUT</div>
+            <div class="step-desc">Concrete result with proof — PoC code, command output, specific file:line, log excerpt. Or "nothing found" with a clear explanation of what was verified and why it's clean.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use cases -->
+  <section class="usecases" id="cases">
+    <div class="wrapper">
+      <p class="section-label">Use Cases</p>
+      <h2>Where Mythos<br/>earns its cost.</h2>
+      <p class="section-sub">Built for tasks where standard Claude gives you opinions. Mythos gives you proof. Expect $0.20–$2.00 per task using claude-opus-4-6.</p>
+
+      <div class="cases-grid">
+        <div class="case-card">
+          <div class="case-icon">🔐</div>
+          <div class="case-title">Security Audit</div>
+          <div class="case-desc">Attack surface mapping, vulnerability hunting, exploit chain construction. Each finding comes with a working PoC or explicit proof it's not exploitable.</div>
+          <div class="case-cmd">/mythos security ./api</div>
+        </div>
+        <div class="case-card">
+          <div class="case-icon">🐛</div>
+          <div class="case-title">Deep Debugging</div>
+          <div class="case-desc">When grep + logs + "ask Claude" failed. Iterative root cause analysis — hypothesis per plausible cause, real test, verified fix.</div>
+          <div class="case-cmd">/mythos debug "segfault on login"</div>
+        </div>
+        <div class="case-card">
+          <div class="case-icon">🔍</div>
+          <div class="case-title">Code Audit</div>
+          <div class="case-desc">Comprehensive review with evidence per finding — not a list of vague concerns, but specific file:line citations and reproduction steps.</div>
+          <div class="case-cmd">/mythos audit ./src</div>
+        </div>
+        <div class="case-card">
+          <div class="case-icon">⚡</div>
+          <div class="case-title">Deep Analysis</div>
+          <div class="case-desc">Multi-layer chain reasoning — code → infra → business impact. Each link in the chain verified before the next is formed.</div>
+          <div class="case-cmd">/mythos deep "why is checkout slow"</div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        <span class="warning-icon">⚠</span>
+        <span><strong style="color: var(--text)">When not to use Mythos:</strong> Simple queries, single-file edits, tasks Sonnet handles in one turn. Mythos is Opus in an iterative loop — the cost is real. Use it when you need proof, not when you need a quick answer.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Principles -->
+  <section class="rules" id="principles">
+    <div class="wrapper">
+      <p class="section-label">Principles</p>
+      <h2>Five rules.<br/>Zero exceptions.</h2>
+      <p class="section-sub">These are not guidelines. Every Mythos run enforces all five. No finding ships without meeting all of them.</p>
+
+      <div class="rules-list">
+        <div class="rule-item">
+          <div class="rule-num">01</div>
+          <div class="rule-body">
+            <div class="rule-title">No mid-loop interruptions</div>
+            <div class="rule-desc">Run the full loop, return one result. The only exception: destructive actions (delete, send, payment). Everything else runs to completion autonomously.</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">02</div>
+          <div class="rule-body">
+            <div class="rule-title">Every hypothesis must be executed</div>
+            <div class="rule-desc">Not reasoned about. Executed. Real bash command, real file read, real test run. Reasoning without execution is not a Mythos hypothesis — it's a guess.</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">03</div>
+          <div class="rule-body">
+            <div class="rule-title">Self-correction is mandatory</div>
+            <div class="rule-desc">Before every output: verify every claim has actual evidence attached. If it doesn't, the loop continues. No claim without proof leaves the loop.</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">04</div>
+          <div class="rule-body">
+            <div class="rule-title">Chain findings</div>
+            <div class="rule-desc">If finding A implies finding B, verify B in the same loop. Don't output a partial picture. Chase implications until the chain terminates or loops back.</div>
+          </div>
+        </div>
+        <div class="rule-item">
+          <div class="rule-num">05</div>
+          <div class="rule-body">
+            <div class="rule-title">Output always includes proof</div>
+            <div class="rule-desc">PoC code, command output, specific file:line, log excerpt. "Nothing found" is valid only if nothing was found after active verification — with the verification shown.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Comparison -->
+  <section class="comparison">
+    <div class="wrapper">
+      <p class="section-label">Comparison</p>
+      <h2>Mythos vs.<br/>everything else.</h2>
+      <p class="section-sub">What makes this different from asking Claude directly, running a swarm, or using a standard debug session.</p>
+
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Approach</th>
+            <th>Verifies hypotheses</th>
+            <th>Chains findings</th>
+            <th>Self-corrects</th>
+            <th>Outputs proof</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Mythos (this skill)</td>
+            <td><span class="tag-yes">yes</span></td>
+            <td><span class="tag-yes">yes</span></td>
+            <td><span class="tag-yes">yes</span></td>
+            <td><span class="tag-yes">yes</span></td>
+          </tr>
+          <tr>
+            <td>Standard Claude prompt</td>
+            <td><span class="tag-no">no</span></td>
+            <td><span class="tag-no">no</span></td>
+            <td><span class="tag-no">no</span></td>
+            <td><span class="tag-no">opinion only</span></td>
+          </tr>
+          <tr>
+            <td>Agent swarm</td>
+            <td><span class="tag-partial">partial</span></td>
+            <td><span class="tag-no">rarely</span></td>
+            <td><span class="tag-no">no</span></td>
+            <td><span class="tag-partial">varies</span></td>
+          </tr>
+          <tr>
+            <td>Chain-of-thought prompting</td>
+            <td><span class="tag-no">no</span></td>
+            <td><span class="tag-partial">partial</span></td>
+            <td><span class="tag-no">no</span></td>
+            <td><span class="tag-no">reasoning only</span></td>
+          </tr>
+          <tr>
+            <td>Standard debug session</td>
+            <td><span class="tag-partial">manual</span></td>
+            <td><span class="tag-partial">manual</span></td>
+            <td><span class="tag-no">no</span></td>
+            <td><span class="tag-partial">if you ask</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Quick start -->
+  <section class="quickstart" id="quickstart">
+    <div class="wrapper">
+      <p class="section-label">Install</p>
+      <h2>Three steps<br/>to Mythos.</h2>
+      <p class="section-sub">Works on macOS, Linux, and Windows WSL. Requires Claude Code CLI. No external APIs.</p>
+
+      <div class="qs-steps">
+        <div class="qs-step">
+          <div class="qs-num">1</div>
+          <div class="qs-body">
+            <div class="qs-title">Install Claude Code</div>
+            <div class="qs-desc">If you don't have it yet — <a href="https://claude.ai/code" style="color: var(--accent); text-decoration: none;">claude.ai/code</a>. Available as a CLI, VS Code/JetBrains extension, or Mac desktop app.</div>
+          </div>
+        </div>
+        <div class="qs-step">
+          <div class="qs-num">2</div>
+          <div class="qs-body">
+            <div class="qs-title">Install the skill</div>
+            <div class="qs-desc">Via Claude Code (recommended) or manual git clone.</div>
+            <pre><span class="dollar">$</span> claude install https://github.com/filipdopita/mythos-skill
+
+<span class="comment"># Or manually:</span>
+<span class="dollar">$</span> git clone https://github.com/filipdopita/mythos-skill \
+    ~/.claude/skills/mythos</pre>
+          </div>
+        </div>
+        <div class="qs-step">
+          <div class="qs-num">3</div>
+          <div class="qs-body">
+            <div class="qs-title">Run it</div>
+            <div class="qs-desc">In any Claude Code session, trigger Mythos with <code>/mythos</code> followed by your task.</div>
+            <pre><span class="comment"># Security audit</span>
+<span class="dollar">$</span> /mythos security ./src/api
+
+<span class="comment"># Debug a crash</span>
+<span class="dollar">$</span> /mythos debug "NullPointerException in UserService.login()"
+
+<span class="comment"># Deep analysis</span>
+<span class="dollar">$</span> /mythos deep "why does the dashboard take 8s to load"</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="wrapper">
+      <div class="footer-left">
+        <span class="footer-bolt">⚡</span>
+        mythos — MIT License
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/filipdopita/mythos-skill" target="_blank">GitHub</a>
+        <a href="https://github.com/filipdopita/mythos-skill/blob/main/SKILL.md" target="_blank">SKILL.md</a>
+        <a href="https://claude.ai/code" target="_blank">Claude Code</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    function copyInstall(btn) {
+      const text = 'claude install https://github.com/filipdopita/mythos-skill';
+      navigator.clipboard.writeText(text).then(() => {
+        btn.textContent = 'copied!';
+        setTimeout(() => btn.textContent = 'copy', 2000);
+      }).catch(() => {
+        btn.textContent = 'failed';
+        setTimeout(() => btn.textContent = 'copy', 2000);
+      });
+    }
+
+    // Subtle scroll-based nav opacity
+    const nav = document.querySelector('nav');
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY;
+      nav.style.borderBottomColor = y > 40
+        ? 'rgba(255,255,255,0.09)'
+        : 'rgba(255,255,255,0.05)';
+    }, { passive: true });
+
+    // Animate loop steps on scroll into view
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.loop-step, .case-card, .rule-item, .qs-step').forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(12px)';
+      el.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+      observer.observe(el);
+    });
+  </script>
+</body>
+</html>
