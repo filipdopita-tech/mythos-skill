@@ -180,11 +180,11 @@ Works on any system with Claude Code installed:
 ## Install
 
 ```bash
-# Via Claude Code (recommended)
-claude install https://github.com/filipdopita-tech/mythos-skill
-
-# Manual
+# Clone into your Claude Code skills directory
 git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/mythos
+
+# Via ClawhHub marketplace (if installed)
+# claude install https://github.com/filipdopita-tech/mythos-skill
 ```
 
 Then use `/mythos [task]` in any Claude Code session.

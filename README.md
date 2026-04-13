@@ -27,12 +27,12 @@ Max 5 iterations per task. Always uses `claude-opus-4-6`.
 ## Install
 
 ```bash
-# Via Claude Code
-claude install https://github.com/filipdopita-tech/mythos-skill
-
-# Manual install
+# Clone into your Claude Code skills directory
 git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/mythos
 ```
+
+> **Via ClawhHub marketplace** (if you have it installed):
+> `claude install https://github.com/filipdopita-tech/mythos-skill`
 
 ---
 

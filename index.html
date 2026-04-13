@@ -8,6 +8,8 @@
   <meta property="og:title" content="Mythos — Claude Code Skill" />
   <meta property="og:description" content="Hypothesize. Execute. Evaluate. Self-correct. Repeat." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://filipdopita-tech.github.io/mythos-skill/" />
+  <link rel="canonical" href="https://filipdopita-tech.github.io/mythos-skill/" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
@@ -720,8 +722,8 @@
           <button class="copy-btn" onclick="copyInstall(this)">copy</button>
         </div>
         <div class="install-body">
-          <div class="comment"># Install via Claude Code</div>
-          <div class="cmd"><span class="dollar">$</span> claude install https://github.com/filipdopita-tech/mythos-skill</div>
+          <div class="comment"># Clone into ~/.claude/skills/</div>
+          <div class="cmd"><span class="dollar">$</span> git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/mythos</div>
           <div class="comment" style="margin-top:12px"># Then use it</div>
           <div class="cmd"><span class="dollar">$</span> /mythos security ./api</div>
           <div class="cmd"><span class="dollar">$</span> /mythos debug "null pointer on checkout"</div>
@@ -979,12 +981,12 @@
           <div class="qs-num">2</div>
           <div class="qs-body">
             <div class="qs-title">Install the skill</div>
-            <div class="qs-desc">Via Claude Code (recommended) or manual git clone.</div>
-            <pre><span class="dollar">$</span> claude install https://github.com/filipdopita-tech/mythos-skill
+            <div class="qs-desc">Clone the repo into your Claude Code skills directory. Works on any OS.</div>
+            <pre><span class="dollar">$</span> git clone https://github.com/filipdopita-tech/mythos-skill \
+    ~/.claude/skills/mythos
 
-<span class="comment"># Or manually:</span>
-<span class="dollar">$</span> git clone https://github.com/filipdopita-tech/mythos-skill \
-    ~/.claude/skills/mythos</pre>
+<span class="comment"># ClawhHub marketplace (if installed):</span>
+<span class="comment"># claude install https://github.com/filipdopita-tech/mythos-skill</span></pre>
           </div>
         </div>
         <div class="qs-step">
@@ -1023,7 +1025,7 @@
 
   <script>
     function copyInstall(btn) {
-      const text = 'claude install https://github.com/filipdopita-tech/mythos-skill';
+      const text = 'git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/mythos';
       navigator.clipboard.writeText(text).then(() => {
         btn.textContent = 'copied!';
         setTimeout(() => btn.textContent = 'copy', 2000);
