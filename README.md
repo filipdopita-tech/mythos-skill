@@ -1,26 +1,60 @@
 # ⚡ Mythos — Claude Code Skill
 
-> Emulation of Claude Mythos Preview. One autonomous agent. Iterative loop. Evidence-first.
+> Emulation of Claude Mythos Preview. Falsification-first. Calibrated confidence. Bias monitoring. Evidence or nothing.
 
-Mythos is a Claude Code skill that emulates Anthropic's unreleased frontier model — a reasoning system that **hypothesizes, executes, evaluates, and self-corrects** in a closed loop until it produces a result backed by real evidence.
+Mythos is a Claude Code skill that emulates Anthropic's unreleased frontier model — a reasoning system built on **falsification-first epistemology**: every hypothesis starts with ASSUME YES and actively seeks disconfirming evidence before confirming.
 
-No brainstorming. No swarm. No asking mid-task. Just one agent that doesn't stop until it has proof.
+No brainstorming. No mid-task interruptions. One agent that doesn't stop until it has proof — or can explain exactly why nothing was found.
 
 ---
 
-## What It Does
+## What Makes v2 Different
+
+v1 was a hypothesis loop. v2 is a different epistemology:
+
+| | Standard Claude | Mythos v2 |
+|---|---|---|
+| Default stance | Neutral: "Looking for X" | Adversarial: "X exists — prove me wrong" |
+| Claims | "Maybe X" | `[HIGH/direct/85%] X — evidence: Y` |
+| Hypotheses | Confirms plausible | Actively falsifies |
+| Uncertainty | Vague ("maybe") | Calibrated `[HIGH/MED/LOW/%]` |
+| Bias check | None | Explicit, every 3 iterations |
+| Output | Always an answer | Findings + proof, or "nothing — why + test evidence" |
+
+---
+
+## Core Loop (10 steps)
 
 ```
-MAP → HYPOTHESIZE → EXECUTE → EVALUATE → SELF-CORRECT → OUTPUT
+0. PRE-FLIGHT       — scope, sweep, hypotheses (ranked by prior), task graph
+1. EXTENDED THINK   — falsifying test first (what would disprove this?)
+2. EXECUTE          — real action, not just reasoning
+3. EVIDENCE         — [HIGH/direct/91%] or [MED/inference/67%]
+4. REPLICATION      — HIGH claims require 2× independent reproduction
+5. CHAIN            — implications + update other hypotheses
+6. REFUTED?         — REFUTED + reason → next hypothesis
+7. BIAS CHECK       — every 3 iterations: 7 cognitive bias types
+8. PIVOT CHECK      — every 3 iterations without HIGH: re-rank priors
+9. SELF-CORRECT     — claim without evidence → back to step 2
+10. DONE?           — adversarial review → output
 ```
 
-- Forms a concrete hypothesis ("The bug is at auth.ts:142")
-- Verifies it with a real action (runs code, reads file, executes bash)
-- Chains findings (if A implies B, verifies B in the same loop)
-- Self-corrects before output ("Is every claim backed by evidence?")
-- Returns a result with proof — or explains exactly why nothing was found
+Max 7 iterations per sub-task. After 3 sub-tasks with 0 HIGH findings: auto scope expansion.
 
-Max 5 iterations per task. Always uses `claude-opus-4-6`.
+---
+
+## Evidence Quality System
+
+```
+[HIGH/direct/85–100%]  — command run, output seen, reproduced
+[HIGH/code/85–100%]    — code read, finding at specific line, reproduced
+[MED/inference/60–84%] — logical inference from HIGH findings
+[MED/pattern/60–84%]   — pattern match on documented problem type
+[LOW/hypothesis/30–59%]— unverified hypothesis, needs test
+[UNVERIFIED/<30%]      — never appears in output as fact
+```
+
+**Minimum Viable Proof**: smallest set of HIGH findings supporting the conclusion. Once reached — stop collecting. More evidence past MVP = sunk cost bias.
 
 ---
 
@@ -31,8 +65,12 @@ Max 5 iterations per task. Always uses `claude-opus-4-6`.
 git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/mythos
 ```
 
-> **Via ClawhHub marketplace** (if you have it installed):
-> `claude install https://github.com/filipdopita-tech/mythos-skill`
+Or one-liner:
+```bash
+curl -fsSL https://raw.githubusercontent.com/filipdopita-tech/mythos-skill/main/install.sh | bash
+```
+
+Then use `/mythos [task]` in any Claude Code session.
 
 ---
 
@@ -44,40 +82,46 @@ git clone https://github.com/filipdopita-tech/mythos-skill ~/.claude/skills/myth
 
 | Command | What it does |
 |---|---|
-| `/mythos security ./api` | Vulnerability hunt with PoC |
-| `/mythos debug "null pointer on login"` | Root cause + fix |
-| `/mythos audit ./src` | Comprehensive code audit with evidence |
-| `/mythos deep "why is checkout slow"` | Deep analysis + chain reasoning |
+| `/mythos security ./api` | Assume-compromise hunt — full exploit chain |
+| `/mythos debug "null pointer on login"` | Assume bug exists — falsify location |
+| `/mythos audit ./src` | Calibrated audit with replication |
+| `/mythos deep "why is checkout slow"` | Falsification-first chain reasoning |
+
+On activation, Mythos always announces:
+```
+MYTHOS — [variant] | Scope: [X] | Model: claude-opus-4-6
+→ Pre-flight started.
+```
 
 ---
 
-## Benchmarks (Real Mythos)
+## Benchmarks (Real Mythos, Project Glasswing)
 
 | Benchmark | Score |
 |---|---|
-| PoC exploit on first attempt | **83.1%** |
-| Firefox CVE coverage | **181/181** |
-| Oldest vuln found | 27-year OpenBSD |
-| RCE discovery | 17-year FreeBSD |
+| PoC exploit on first attempt | **83.1%** (vs ~12% standard models) |
+| Firefox CVE coverage | **181/181** novel vulnerabilities |
+| Oldest vulnerability found | 27-year OpenBSD |
+| Timing side-channel | 16-year FFmpeg |
 
-This skill emulates the reasoning *approach* — the loop structure, evidence requirements, and chain-finding methodology — that produces results like these.
+This skill emulates the reasoning approach — falsification-first, evidence calibration, bias monitoring — that produces results like these.
 
 ---
 
 ## When to Use
 
-- Security audits and vulnerability hunting
-- Deep debugging where standard approaches failed
-- Any task where you need **proof**, not opinion
-- Complex multi-layer analysis (code → infra → business impact)
+- Security audits, vulnerability hunting, penetration testing
+- Deep debugging where standard approaches (grep, add logs, ask Claude) failed
+- Any analysis requiring **proof**, not opinion
+- Complex chain reasoning across layers (code → infra → business impact)
 
-**Don't use for:** simple queries, single-file edits, tasks that Sonnet handles in one turn.
+**Don't use for:** simple queries, single-file edits, tasks Sonnet handles in one turn.
 
 ---
 
 ## Cost
 
-Each task uses `claude-opus-4-6` in an iterative loop — expect **$0.20–$2.00 per task** depending on depth and codebase size.
+Each task uses `claude-opus-4-6` in an iterative loop — expect **$0.50–$5.00 per task** depending on depth and number of hypotheses tested.
 
 ---
 
@@ -95,6 +139,6 @@ MIT — free to use, fork, and modify.
 
 ---
 
-## Landing Page
+## Changelog
 
-[filipdopita-tech.github.io/mythos-skill](https://filipdopita-tech.github.io/mythos-skill) *(or open `index.html` locally)*
+See [CHANGELOG.md](CHANGELOG.md).
