@@ -1,5 +1,26 @@
 # Changelog
 
+## [2.1.0] — 2026-04-17
+
+### Changed — Anthropic Glasswing Alignment + Opus 4.7
+
+- **Model upgrade**: default target `claude-opus-4-7` (was Opus 4.6); 1M context variant for large-scope investigations
+- **Real Mythos context**: explicit reference to Anthropic's Project Glasswing launch (2026-04-07), 12 launch partners, $100M usage credits, first model withheld for safety in 7 years
+- **Verified benchmarks table**: CyberGym 83.1%, SWE-bench Verified 93.9%, SWE-bench Pro 77.8%, Terminal-Bench 2.0 82.0%, GPQA Diamond 94.6%, BrowseComp 4.9× token efficiency
+- **Real-world capability evidence**: Firefox JS shell exploits (181 successes), OSS-Fuzz tier-5 chain hijack on 10 targets, 27-year-old OpenBSD bug, 16-year-old FFmpeg flaw
+- **Bayesian updates**: hypothesis confidence updated via likelihood ratios after every evidence step
+- **Steelman-before-falsify**: steelman strongest counter-hypothesis before attempting falsification
+- **Pearl causal ladder**: association → intervention → counterfactual reasoning for causal claims
+- **ACH matrix (Heuer)**: Analysis of Competing Hypotheses — hypothesis with fewest contradictions wins
+- **EVOI-NC prioritization**: Expected Value of Information with Noise Correction for evidence-gathering order
+- **Source-independence rule**: replication requires independent sources, not same-source repeated reads
+- **Narrative completeness check**: output must tell a complete causal story, not a list of facts
+- **Autonomous overnight mode**: scope-bounded multi-hour investigations with self-paced checkpoints
+- **Responsible disclosure protocol**: for novel vulnerabilities — coordinated disclosure templates
+- **4.9× token efficiency target**: aggressive evidence pruning, MVP-first, no redundant replication past threshold
+
+---
+
 ## [2.0.0] — 2026-04-13
 
 ### Changed — Major Rewrite
