@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.0] — 2026-04-17 (sync 2026-04-21)
+
+### Changed — Lean Refactor: 44% reduction, core preserved
+
+- **Size**: SKILL.md 1133 → 638 lines (44% reduction)
+- **Removed (theatre)**: EVOI-NC ranking formulas, "4.9× token efficiency" self-claim, 7 individually-listed bias types (consolidated to 5), redundant explanatory prose around every concept
+- **Preserved (core)**: ACH matrix, Falsification-First, Bayesian L.R. updates, Pearl causal ladder, source independence, MVP stopping criterion, pre-flight protocol, bias check categories, autonomous mode
+- **Consolidated**: Domain templates (Security/Debug/Architecture/Data) merged into shared pre-flight + per-domain deltas
+- **Tightened**: Extended Thinking format, Execution Loop (14 sequential steps, previously 10 with branching), Evidence Quality levels (1-5, reverse severity-sorted)
+- **Confidence 85%**: core epistemology unchanged; rollback to v2.1 trivial if discipline regresses
+- **Rationale**: Mythos scaffold works through *discipline at every step*, not through *listing what disciplines to apply*. v2.1 described the system; v2 runs it.
+
+---
+
 ## [2.1.0] — 2026-04-17
 
 ### Changed — Anthropic Glasswing Alignment + Opus 4.7
