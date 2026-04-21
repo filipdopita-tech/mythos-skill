@@ -46,31 +46,34 @@ Sources: [red.anthropic.com/2026/mythos-preview](https://red.anthropic.com/2026/
 | Uncertainty | Vague ("maybe") | Calibrated `[LEVEL/TYPE/%]` + Bayesian L.R. update |
 | Competing hypotheses | Best hypothesis wins | **ACH matrix (Heuer)** — H with fewest contradictions |
 | New evidence | Accepts | Explicit likelihood ratio update |
-| Reasoning efficiency | More tokens = better | **4.9× fewer tokens** — each token = update |
+| Reasoning efficiency | More tokens = better | **Each token = update** — filler removed, every thinking token maps to a concrete action |
 | Sources | "Two sources" | **Source-independence** — two methods, not two views of one |
 | Proof budget | Collect until certain | **Minimum Viable Proof** — smallest HIGH set → stop |
 | Autonomy | Asks when blocked | **Autonomous overnight mode** — pivot, scope-expand, no stop |
 | Empty result | "Couldn't find anything" | Sensitivity-verified "nothing found" or explicit scope expansion |
-| Bias check | None | Every 3 iterations + real-time + 12 bias categories |
+| Bias check | None | Every 3 iterations — 5 categories (confirmation, anchoring, premature closure, aligned signals, motivated reasoning) |
 | Disclosure | Ad-hoc | **Responsible disclosure protocol** — patched = full, unpatched = hash |
 | Goal | Answer | Narrative-complete findings (entry → mechanism → impact) |
 
 ---
 
-## Core Loop (10 steps)
+## Execution Loop (14 steps)
 
 ```
-0. PRE-FLIGHT       — scope, pre-mortem, initial sweep, EVOI-NC-ranked H, task graph
-1. EXTENDED THINK   — falsifying test first (what would disprove this?)
-2. EXECUTE          — real action, not just reasoning
-3. EVIDENCE         — [HIGH/direct/91%] or [MED/inference/67%]
-4. REPLICATION      — HIGH claims require 2× independent reproduction (source-independent)
-5. CHAIN            — implications + Bayesian update on other hypotheses
-6. REFUTED?         — REFUTED + reason → next hypothesis via ACH ranking
-7. BIAS CHECK       — every 3 iterations: 12 cognitive bias categories
-8. PIVOT CHECK      — every 3 iterations without HIGH: re-rank priors
-9. SELF-CORRECT     — claim without evidence → back to step 2
-10. DONE?           — narrative completeness + adversarial review → output
+0.  PRE-FLIGHT          — scope, pre-mortem, reference class, steelmaned H, task graph
+1.  EXTENDED THINK      — steelman first, falsifying test before confirming
+2.  EXECUTE             — real action; parallel H where independent
+3.  SURPRISE CHECK      — P<20% before test? → large L.R. + secondary H
+4.  NARRATIVE CHECK     — entry → mechanism → impact complete?
+5.  CAUSAL LADDER       — CORR → CAUSAL → COUNTERFACTUAL (HIGH needs CAUSAL)
+6.  REPLICATION         — HIGH/direct: 2× source-independent methods
+7.  ACH UPDATE          — mark +/0/-/-- per H; eliminate most-contradicted
+8.  BAYESIAN            — explicit L.R. per H + secondary H queue
+9.  MVP CHECK           — smallest HIGH set for narrative → stop
+10. REFUTED? → pivot    — next H via ACH ranking
+11. BIAS CHECK (3 iter) — confirmation / anchoring / premature closure / aligned signals / motivated reasoning
+12. PIVOT (3 iter, 0 HIGH) — re-rank priors, alternative H
+13. SELF-CORRECT        — claim without evidence → back to step 2
 ```
 
 Max 7 iterations per sub-task. After 3 sub-tasks with 0 HIGH findings: auto scope expansion with documented rationale.
@@ -148,7 +151,7 @@ Model: claude-opus-4-7[1m]
 
 ## Cost
 
-Each task runs `claude-opus-4-7` (or `claude-opus-4-7[1m]` for large scope) in an iterative loop — expect **$0.20–$2.00 per task** depending on depth and hypotheses tested. The 4.9× token efficiency target keeps this lower than it looks — each thinking token maps to a concrete action or update, not filler.
+Each task runs `claude-opus-4-7` (or `claude-opus-4-7[1m]` for large scope) in an iterative loop — expect **$0.20–$2.00 per task** depending on depth and hypotheses tested. Aggressive pruning (MVP stopping, no replication past threshold, no filler reasoning) keeps cost lower than it looks — each thinking token maps to a concrete action or update.
 
 ---
 
@@ -169,4 +172,4 @@ MIT — free to use, fork, and modify.
 
 ## Changelog
 
-See [CHANGELOG.md](CHANGELOG.md) — v2.1 adds Opus 4.7, Glasswing alignment, Bayesian updates, Pearl ladder, ACH matrix, EVOI-NC prioritization, source-independence, autonomous overnight mode, and responsible disclosure.
+See [CHANGELOG.md](CHANGELOG.md) — v2.2 (current): 44% lean refactor, theatre removed (EVOI-NC formulas, token-efficiency self-claim), core preserved (ACH, Falsification-First, Bayesian L.R., Pearl ladder, source independence, MVP). v2.1: Opus 4.7 + Glasswing alignment. v2.0: Falsification-first rewrite.

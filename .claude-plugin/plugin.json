@@ -1,7 +1,7 @@
 {
   "name": "mythos",
-  "version": "2.0.0",
-  "description": "Emulation of Claude Mythos Preview — falsification-first epistemology, calibrated confidence [HIGH/MED/LOW/%], meta-cognitive bias monitoring, 10-step execution loop with replication requirement. Evidence or nothing. Always Opus.",
+  "version": "2.2.0",
+  "description": "Emulation of Claude Mythos Preview — falsification-first epistemology, calibrated [LEVEL/TYPE/%] confidence, ACH matrix, Bayesian L.R. updates, Pearl causal ladder, source-independent replication, Minimum Viable Proof. Evidence or nothing. Always Opus 4.7.",
   "author": {
     "name": "Filip Dopita",
     "url": "https://github.com/filipdopita-tech"
