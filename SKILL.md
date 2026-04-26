@@ -252,7 +252,9 @@ Thresholds:
    ↓
 8. BAYESIAN (explicit L.R. per H + secondary H queue)
    ↓
-9. MVP CHECK (nejmenší sada HIGH pro narrative? ANO → stop)
+9. MVP + ACT HALTING (oboje testuj):
+   - MVP: nejmenší sada HIGH pro narrative complete? ANO → stop
+   - ACT: posterior všech HIGH H se mezi iter N a N+1 změnil <±5pp AND 0 nových secondary H? ANO → stop (stagnation detection — brání sunk cost iter past MVP)
    ↓
 10. REFUTED? → pivot → next H
     ↓
@@ -360,6 +362,8 @@ Před outputem: každé ASSUMED → ověř → KNOWN, nebo označ s risk.
 □ 3. PREMATURE CLOSURE — stop u prvního plausible? Signal: přestal testovat ostatní H po prvním HIGH bez narrative check.
 □ 4. ALIGNED SIGNALS — jsou 2 "nezávislé" replikace skutečně nezávislé? Test: "Mohly by selhat ze stejného důvodu?"
 □ 5. MOTIVATED REASONING — hledám výsledek, který chci? Signal: zklamán disconfirming evidencí?
+□ 6. CONFIDENCE RUNAWAY — H confidence roste ≥15pp/iter po 2 iter v řadě bez nového direct evidence (jen inference / replikace stejné metody)? Signal: lead H +30pp ve 2 iter, 0 nových direct findings. Trigger-based (ne periodický — chytá spirálu uvnitř 3-iter okna).
+   ANO → "RUNAWAY: H[X] +Δpp bez nového direct E. Freeze posterior. ACH re-mark forced."
 
 ANO → "BIAS DETECTED: [typ]. Korekce: [akce]." Pivot nebo rebalance H + Bayesian update.
 ```

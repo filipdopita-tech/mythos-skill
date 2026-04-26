@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.0] — 2026-04-26
+
+### Added — RDT Pattern Translation (cherry-pick from kyegomez/OpenMythos)
+
+Two functional gaps closed by translating concepts from OpenMythos Recurrent-Depth Transformer architecture into prompt scaffolding. Lean addition: +4 lines, no theatre.
+
+- **ACT Halting** (Execution Loop step 9): Adaptive Computation Time stop criterion alongside MVP. Stops loop when posterior of all HIGH H changes <±5pp between iter N and N+1 AND zero new secondary H — stagnation detection, prevents sunk cost iteration past MVP. Original MVP tested *narrative completeness*; ACT tests *convergence stagnation*. Complementary, not redundant.
+- **Confidence Runaway guard** (Bias Check #6): Trigger-based (not periodic) bias check fires when H confidence grows ≥15pp/iter for 2 consecutive iterations without new direct evidence (only inference / same-method replication). Periodic 5-bias check fires every 3 iter; runaway can occur within that window — this catches it real-time. Action: freeze posterior, force ACH re-mark.
+- **Skipped from OpenMythos**: Latent Depth Pass (silent T-loop refinement) — duplicates Extended Thinking 8K + Pre-Flight steelmaning. MoE expert routing — 7 domain variants already cover. LoRA adaptation — N/A for single Markdown skill. Loop-index embeddings — `[iter N/7]` notation already implicit in status line.
+- **Rationale**: OpenMythos is an ML training architecture (PyTorch, Recurrent-Depth Transformer), not a skill. Direct import impossible. But 2 of its conceptual patterns (ACT halting, stability constraint) translate cleanly to investigative discipline gaps. Less is more — v2 lean refactor preserved.
+- **Reference**: [kyegomez/OpenMythos](https://github.com/kyegomez/OpenMythos) (RDT architecture, 5793★)
+
+---
+
 ## [2.2.0] — 2026-04-17 (sync 2026-04-21)
 
 ### Changed — Lean Refactor: 44% reduction, core preserved
