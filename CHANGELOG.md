@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.3.1] — 2026-04-26
+
+### Added — Two new investigative sections
+
+- **ACH Parallel Mode (forked subagents)**: when 4-5 H share evidence space, fork each H to its own subagent (CC 2.1.117+ `CLAUDE_CODE_FORK_SUBAGENT=1`), each runs with mandate "ASSUME H_X yes, falsify, return L.R. + evidence rows", master merges into ACH matrix. ~3-5× tokens but wall-clock 1× and zero sequential anchoring. Skip for 1-2 H or tight time budget.
+- **Resource monitoring (autonomous-specific)**: pre-flight Rate Limits API check (`/v1/organizations/{id}/rate_limits`, GA 2026-04-24); per-iter token spend checkpoint; token-ninja MCP velocity tracker (optional) — abort run when iter spend >15K tokens for 3 in a row, hard stop at 80% rate-limit hit.
+- **Sanitized**: removed personal path/identity references from new sections.
+
+---
+
 ## [2.3.0] — 2026-04-26
 
 ### Added — RDT Pattern Translation (cherry-pick from kyegomez/OpenMythos)

@@ -184,6 +184,21 @@ Mark: Consistent (+) | Neutral (0) | Inconsistent (-) | Refutes (--).
 
 **KRITICKÝ:** "Nejsilnější H" ≠ "potvrzená H". Hledej DISCONFIRMING pro lead H, ne confirming (confirmation bias trap). 2+ H se stejným skóre → scope expand pro discriminative evidence.
 
+### ACH Parallel Mode (forked subagents)
+
+Pro 4-5 H s overlapping evidence prostorem — paralelní investigation eliminuje sekvenční anchoring.
+
+```
+1. Fork: každá H → vlastní subagent (CLAUDE_CODE_FORK_SUBAGENT=1, CC 2.1.117+)
+   Setup: každý subagent má agent frontmatter mcpServers loaded (main-thread, 2.1.117+)
+2. Mandate: "ASSUME H_X yes. Falsifikuj. Vrať L.R. + evidence rows."
+3. Merge: collect L.R. + evidence per H → master ACH matrix
+4. Master: ranks, eliminates max-disconfirming, generates secondary H
+5. Token cost ~3-5× sequential, ale wall-clock 1× a anchoring 0
+```
+
+**Kdy použít:** ≥4 plausible H, evidence space overlap (security pre-flight + competing exploit chains, debug s multiple fault candidates, arch s competing bottleneck H). **Skip pro:** 1-2 H, simple debug, tight time budget.
+
 ### 5. Bayesian Update (explicit L.R.)
 
 Po každém finding/refutation: L.R. + update všech H.
@@ -389,6 +404,21 @@ NO-GO (stop + report): destructive / out-of-scope access / cost překročen / le
 Output: full finding list, sensitivity-verified negatives, scope expansion kandidáti, next-action recommendations, token spend.
 ```
 
+### Resource monitoring (autonomous specifický)
+
+Heavy Opus 4.7 + extended thinking + multi-iter = riziko rate limit blow-out a token spike v dlouhých nočních runs.
+
+```
+1. Pre-flight: poll Rate Limits API (`/v1/organizations/{id}/rate_limits`, GA 2026-04-24).
+   Pokud current usage > 60% kapacity → varuj user, sniž max iter.
+2. Per-iter: log token spend do checkpoint file (per-user checkpoint /3 iter).
+3. Token-ninja MCP (optional, viz token-ninja install) → live token velocity tracker.
+   Trigger: pokud average iter spend > 15K tokens po 3 iter v řadě → STOP, request scope tighten.
+4. Při 80% rate-limit hit → STOP run, zachovaj checkpoint, eskaluj user pro window reset.
+```
+
+Cílem JE dokončit MVP, ne vyčerpat budget. Resource exhaustion = horší než nothing-found po MVP.
+
 ---
 
 ## Scope Expansion
@@ -428,6 +458,8 @@ ANCHORING NA H1: 3 iter bez HIGH → +15% k H2 (anti-anchor) + re-rank.
 NARRATIVE INCOMPLETE: [MED/inference] — explicitně chybějící kus, NE [HIGH/direct].
 
 MVP DOSAŽENO ALE USER CHCE VÍC: Varuj "MVP dosažen. Další = sunk cost." Pokračuj jen s explicit OK.
+
+MODEL QUALITY DEGRADATION: Pokud Opus 4.7 vrací nekonzistentní L.R., ignoruje falsifying tests, nebo opakuje inference jako direct evidence v 2+ iter za sebou → STOP. Mythos depends na model integrity. Reference: Anthropic April 23 postmortem (hosted models měly quality regression). Action: log timestamp, switch to fresh session (cache invalidation), retest stejnou H. Pokud regression persists → eskaluj user, NEPOKRAČUJ s nedůvěryhodným L.R. update (Bayesian posteriors by byly garbage).
 ```
 
 ---
@@ -609,9 +641,19 @@ MYTHOS — [varianta] | Scope: [co] | Model: claude-opus-4-7 [+1m if large]
 
 - **Default:** `claude-opus-4-7`
 - **1M variant:** `claude-opus-4-7[1m]` — >200K input, cross-file >30 souborů, mega-batch
+- **Effort level:** `xhigh` (mezi `high` a `max`) — sweet spot pro investigativní reasoning. CC 2.1.111+. Set via `/effort xhigh` nebo `--effort xhigh`. CORE EFFORT_LEVEL=max v settings.json přepisuje per-session — pro mythos nech CORE, NESAHEJ.
+- **Prompt cache 1h:** export `ENABLE_PROMPT_CACHING_1H=1` před `claude` invocation. Mythos scaffold má ~640 řádků = velký cache hit. 1h TTL drží cache přes celý autonomous overnight run. **81% cost saving** vs 5min default.
 - **Extended thinking:** `budget_tokens: 8000` default. 2-4K simple, 4-8K moderate, 8-16K complex. Nad 16K diminishing returns.
-- **Long tasks:** screen/tmux na remote (remote host), ne interactive
+- **Long tasks:** screen/tmux na remote (Flash VPS), ne interactive
 - **Destructive:** STOP → user confirmation — jediná výjimka z autonomous
+
+### Persistent memory (gated, optional)
+
+Pokud máš Claude Managed Agents access (header `managed-agents-2026-04-01`, public beta od 2026-04-23):
+- ACH matrix + Bayesian state lze persistovat přes runs (cross-session H queue)
+- Useful pro multi-day investigation (npr. red team review velkého systému)
+- Bez access: každý mythos run startuje fresh ACH (default behavior, žádný regression)
+- Setup: viz `~/.claude/memory/reference_managed_agents_poc_plan_2026_04_21.md`
 
 ### Reálný Mythos access (reference only)
 
